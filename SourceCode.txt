@@ -1,0 +1,161 @@
+package com.feedbackREST.feedbackREST;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
+//This class is used for the Feedback Entry
+@Entity
+public class Feedback {
+	
+	@Id
+	private String name;
+	@Override
+	public String toString() {
+		return "Feedback [name=" + name + ", feedback=" + feedback + "]";
+	}
+	public Feedback(String name, String feedback) {
+		super();
+		this.name = name;
+		this.feedback = feedback;
+	}
+	public Feedback() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getFeedback() {
+		return feedback;
+	}
+	public void setFeedback(String feedback) {
+		this.feedback = feedback;
+	}
+	private String feedback;
+
+}
+
+----------------------------------------------------------------------------------------------------------
+
+package com.feedbackREST.feedbackREST;
+
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+//This FeedbackDao is used as a repository
+@Repository
+public interface FeedbackDao extends CrudRepository<Feedback, String>{
+
+}
+
+-----------------------------------------------------------------------------------------------------------
+
+package com.feedbackREST.feedbackREST;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+//This class is used for my application entry point
+@SpringBootApplication
+@EnableJpaRepositories(basePackages = "com")
+@EntityScan(basePackages = "com")
+public class FeedbackRestApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(FeedbackRestApplication.class, args);
+	}
+
+}
+
+-----------------------------------------------------------------------------------------------------------
+
+package com.feedbackREST.feedbackREST;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+//This class is used as Feedback Service class in order for users to leave feedback
+@Service
+public class FeedbackService {
+
+	
+	@Autowired
+	private FeedbackDao feedbackDao;
+	
+	public boolean addFeedback(String name, String feedback) {
+		
+		feedbackDao.save(new Feedback(name, feedback));
+		return true;
+	
+	}
+}
+
+----------------------------------------------------------------------------------------------------------
+
+package com.feedbackREST.feedbackREST;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+//This class is used for mapping FeedbackService
+@Controller
+@RequestMapping("/main")
+public class MainApp {
+	
+@Autowired
+private FeedbackService feedbackService;
+	
+	@RequestMapping(value = "/add-feedback", method = RequestMethod.GET)
+	
+	public String addFeedback() {
+		return "add-feedback";
+	}
+}
+
+---------------------------------------------------------------------------------------------------------
+
+package com.feedbackREST.feedbackREST;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
+
+//This class is used as a rest controller
+@RestController
+@RequestMapping("/main")
+public class MainApp2 {
+	@Autowired
+	private FeedbackService feedbackService;
+		
+	@PostMapping("/add-feedback")
+	public String addFeedback(@RequestParam("name")String name,@RequestParam("feedback")String feedback) {
+		
+		if(feedbackService.addFeedback(name, feedback)) {
+			
+		return "Feedback successfully submitted!";
+		}
+		return "Feedback was not submitted!";
+	}
+}
